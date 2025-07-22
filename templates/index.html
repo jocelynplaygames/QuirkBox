@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QuirkBox Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: black;
+            color: lime;
+            font-family: 'Courier New', monospace;
+        }
+        select, textarea, button {
+            margin-top: 10px;
+            width: 100%;
+        }
+        canvas {
+            border: 1px solid lime;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🦙 QuirkBox</h2>
+
+    <select id="style">
+        <option value="joke">🃏 Joke</option>
+        <option value="sci-fi">👾 Sci-fi</option>
+        <option value="therapy">🧠 Therapy</option>
+        <option value="casual" selected>💬 Chat</option>
+        <option value="poetry">📜 Poetry</option>
+    </select>
+
+    <textarea id="input" rows="4" placeholder="Type your message..."></textarea>
+    <button onclick="generate()">🔮 Generate</button>
+
+    <pre id="output">Waiting for input...</pre>
+
+    <h3>Attention Map 🧪</h3>
+
+    <label for="layerSelect">Layer:</label>
+    <select id="layerSelect" onchange="updateMap()"></select>
+
+    <label for="headSelect">Head:</label>
+    <select id="headSelect" onchange="updateMap()"></select>
+
+    <canvas id="attnCanvas" width="300" height="300"></canvas>
+
+    <script>
+        let attnData = [];
+
+        async function generate() {
+            const style = document.getElementById("style").value;
+            const input = document.getElementById("input").value;
+
+            document.getElementById("output").innerText = "⏳ Generating...";
+
+            try {
+                const res = await fetch("/generate", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ input, style })
+                });
+
+                const data = await res.json();
+                console.log("✅ API Response:", data);
+
+                document.getElementById("output").innerText = data.output || "[No response]";
+                await loadAttention();
+            } catch (err) {
+                document.getElementById("output").innerText = "[ERROR] " + err.message;
+                console.error(err);
+            }
+        }
+
+        async function loadAttention() {
+            try {
+                const res = await fetch("/static/attn.json");
+                attnData = await res.json();
+
+                if (!attnData.length) {
+                    alert("❗ No attention data.");
+                    return;
+                }
+
+                const numLayers = attnData.length;
+                const numHeads = attnData[0].length;
+
+                const layerSel = document.getElementById("layerSelect");
+                const headSel = document.getElementById("headSelect");
+
+                layerSel.innerHTML = "";
+                headSel.innerHTML = "";
+
+                for (let i = 0; i < numLayers; i++) {
+                    layerSel.innerHTML += `<option value="${i}">Layer ${i}</option>`;
+                }
+
+                for (let j = 0; j < numHeads; j++) {
+                    headSel.innerHTML += `<option value="${j}">Head ${j}</option>`;
+                }
+
+                updateMap();
+            } catch (e) {
+                console.error("Failed to load attention map:", e);
+                alert("❗ Failed to load attention.json.");
+            }
+        }
+
+        function updateMap() {
+            const layer = parseInt(document.getElementById("layerSelect").value);
+            const head = parseInt(document.getElementById("headSelect").value);
+
+            const data = attnData?.[layer]?.[head];
+            if (!data || !Array.isArray(data) || !Array.isArray(data[0])) {
+                alert("⚠️ Invalid attention map data.");
+                return;
+            }
+
+            const size = data.length;
+            const cellSize = Math.floor(300 / size);
+
+            const canvas = document.getElementById("attnCanvas");
+            canvas.width = canvas.height = size * cellSize;
+
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const flat = data.flat();
+            const min = Math.min(...flat);
+            const max = Math.max(...flat);
+
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const val = data[i][j];
+                    const norm = (val - min) / (max - min + 1e-6);
+                    const shade = Math.floor(255 * (1 - norm));
+                    ctx.fillStyle = `rgb(${shade}, ${shade}, 255)`;
+                    ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+
+        window.onload = () => {
+            console.log("🟢 Page ready.");
+        };
+    </script>
+</body>
+</html>

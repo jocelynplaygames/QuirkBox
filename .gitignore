@@ -1,0 +1,51 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Jupyter & notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Virtual environments
+venv/
+.env/
+*.env
+
+# Logs and debug
+*.log
+*.out
+debug.log
+
+# PyTorch
+*.pth
+*.pt
+
+# HuggingFace cache / tokenizer models
+*.model
+*.tokenizer
+tokenizer.json
+tokenizer_config.json
+vocab.json
+merges.txt
+
+# Attention visualizations
+static/attn.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Wandb logs
+wandb/
