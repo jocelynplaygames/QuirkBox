@@ -1,7 +1,7 @@
 # 🧠 QuirkBox: A Lightweight, Visualizable Transformer Text Generation Platform
 
 > ⚡️ Extended from [rasbt/llama-3.2-from-scratch](https://github.com/rasbt/llama-3.2-from-scratch)
-> 🛠️ Developed and redesigned by [Your Name], with enhancements for attention visualization, web UI, and configurable training.
+> 🛠️ With enhancements for attention visualization, web UI, and configurable training.
 
 ---
 
